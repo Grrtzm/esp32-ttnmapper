@@ -1,0 +1,48 @@
+/*
+ * Image below is defined directly in flash memory.
+ * This reduces SRAM consumption.
+ * The image is defined from bottom to top (bits), from left to
+ * right (bytes).
+ */
+
+const PROGMEM uint8_t flashImage[] =
+{
+    0B11000110, 0B00000011,
+    0B00001100, 0B00001100,
+    0B00111000, 0B00010000,
+    0B01110100, 0B00100000,
+    0B11100010, 0B01000001,
+    0B11000010, 0B01000011,
+    0B00000001, 0B10000111,
+    0B11111101, 0B10011111,
+    0B11111001, 0B10111111,
+    0B11100001, 0B10000001,
+    0B11000001, 0B10000011,
+    0B10000010, 0B01000111,
+    0B00000010, 0B01001110,
+    0B00000100, 0B00011100,
+    0B00011000, 0B00111000,
+    0B11100000, 0B01100011
+};
+
+const uint8_t activeSymbol[] PROGMEM = {
+    B00000000,
+    B00000000,
+    B00011000,
+    B00100100,
+    B01000010,
+    B01000010,
+    B00100100,
+    B00011000
+};
+
+const uint8_t inactiveSymbol[] PROGMEM = {
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00011000,
+    B00011000,
+    B00000000,
+    B00000000
+};
