@@ -70,6 +70,14 @@ It is required to power up the GPS module, before you can read from it.
 4. [TinyGPSPlus@1.0.3 TinyGPSPlus-ESP32@0.0.2]
 5. [TTN_esp32@0.1.6]
 
+## Settings in the TTN Console
+I'm not going to instruct you how to create a new TTN mapper application/device/webhook etc. \
+Use [this](https://docs.ttnmapper.org/) as a starting point.\
+You need a script that translates the data which is sent from your TTN mapper device to something the TTN network understands.
+In order to do that, you need to install a "Payload formatter" script. You can do that on "Application" or "Device" level.\
+Copy the contents of ["TTN_Uplink_Payload_formatter.txt"](https://github.com/Grrtzm/esp32-ttnmapper/blob/main/TTN_Uplink_Payload_formatter.txt) to an Uplink Payload formatter (custom Javascript).
+In this case it's not possible to use a standard Cayenne LPP payload formatter because the data format i use is custom made.
+
 # LILYGO TTGO T-Beam
 ![LILYGO-TTGO-Meshtastic-T-Beam-V1-2-ESP32-LoRa-915MHz-433MHz-868MHz-923MHz-WiFi-BLE-GPS](https://github.com/Grrtzm/esp32-ttnmapper/blob/main/LILYGO-TTGO-Meshtastic-T-Beam-V1-2-ESP32-LoRa-915MHz-433MHz-868MHz-923MHz-WiFi-BLE-GPS.png)
 
