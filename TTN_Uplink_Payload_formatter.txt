@@ -1,0 +1,104 @@
+// Formatter type: "Custom Javascript formatter"
+
+function decodeUplink(input) {
+  // Assuming the payload is in CayenneLPP format
+  // https://docs.mydevices.com/docs/lorawan/cayenne-lpp#device-with-gps
+  // 3 bytes each are used for longitude, latitude and altitude coded as signed integer
+  // This all works well for positive numbers, but it fails if we get negative numbers.
+  // We need to encode to a 32 bits / 4 bytes integer.
+  // So we will pad the 3 bytes to 4 bytes and add 0xFF to the left when we have 
+  // a negative 2-complements value (https://en.wikipedia.org/wiki/Two%27s_complement)
+  // More information: https://www.thethingsnetwork.org/docs/devices/bytes/
+
+  var bytes = input.bytes;
+  var b2 = bytes[2];
+  var b3 = bytes[3];
+  var b4 = bytes[4];
+  
+  var b5 = bytes[5];
+  var b6 = bytes[6];
+  var b7 = bytes[7];
+
+  var b8 = bytes[8];
+  var b9 = bytes[9];
+  var b10 = bytes[10];
+
+  // Below are some test values (all signed integers).
+  // Uncomment if you want to test. Examples come from:
+  // https://docs.mydevices.com/docs/lorawan/cayenne-lpp#device-with-gps
+  
+  // latitude = 0xF2960a = -87.9094
+  // b2 = 0xF2;
+  // b3 = 0x96;
+  // b4 = 0x0A;
+
+  // altitude 0x3E8 = 10m
+  // b8 = 0x00;
+  // b9 = 0x03;
+  // b10 = 0xE8;
+
+  // altitude 0xFFFC17 = -10m (use Calculator in Programmer mode to find hex values)
+  // b8 = 0xFF;
+  // b9 = 0xFC;
+  // b10 = 0x17;
+
+  var latitude = 0; 
+  var longitude = 0;
+  var altitude = 0;
+  var acc = 0;
+  
+  //  var latitude = (bytes[2] << 16 | bytes[3] << 8 | bytes[4]) / 10000.0;
+  if(b2 & (1 << 7)){ // Leftmost bit is 1, so negative number
+    //acc=1; // just for testing - to indicate we received a negative number
+    latitude = (b2 << 16 | b3 << 8 | b4);
+    latitude = latitude & 0x00FFFFFF; // only keep the rightmost 3 bytes; Cayenne LPP only uses 3 bytes
+    latitude = latitude | 0xFF000000; // add ones to the left (negative number) to get a 32-bit (long) variable
+  }
+  else{
+    latitude = (b2 << 16 | b3 << 8 | b4);
+  }
+  latitude = latitude / 10000.0; // Up till now we worked with signed integers. This converts it to float.
+
+  //  var longitude = (bytes[5] << 16 | bytes[6] << 8 | bytes[7]) / 10000.0;
+  if(b5 & (1 << 7)){ // Leftmost bit is 1, so negative number
+    //acc=acc+2; // just for testing - to indicate we received a negative number
+    longitude = (b5 << 16 | b6 << 8 | b7);
+    longitude = longitude & 0x00FFFFFF; // only keep the rightmost 3 bytes; Cayenne LPP only uses 3 bytes
+    longitude = longitude | 0xFF000000; // add ones to the left (negative number) to get a 32-bit (long) variable
+  }
+  else{
+    longitude = (b5 << 16 | b6 << 8 | b7); // Up till now we worked with signed integers. This converts it to float.
+  }
+  longitude = longitude / 10000.0;
+
+  // altitude
+  if(b8 & (1 << 7)){ // Leftmost bit is 1, so negative number
+    //acc=acc+4; // just for testing - to indicate we received a negative number
+    altitude = (b8 << 16 | b9 << 8 | b10);
+    altitude = altitude & 0x00FFFFFF; // only keep the rightmost 3 bytes; Cayenne LPP only uses 3 bytes
+    altitude = altitude | 0xFF000000; // add ones to the left (negative number) to get a 32-bit (long) variable
+  }
+  else{
+    altitude = (b8 << 16 | b9 << 8 | b10);
+  }
+  altitude = altitude / 100.0;
+
+  // Decode HDOP as a floating-point number
+  var hdop = (bytes[13] << 8 | bytes[14]) / 100.0;
+
+  // Extract sats as an integer
+  var sats = bytes[17];
+
+  return {
+    data: {
+      lat: latitude,
+      lon: longitude,
+      alt: altitude,
+      hdop: hdop,
+      sats: sats //,
+      //acc: acc
+    },
+    warnings: [],
+    errors: []
+  };
+}
