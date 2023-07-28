@@ -54,6 +54,8 @@
   https://github.com/ThingPulse/esp8266-oled-ssd1306
 ******************************************/
 
+//#define debug // enable debugging via Serial.print() statements
+
 #include <axp20x.h>
 #include "SSD1306Wire.h"  // legacy include: `#include "SSD1306.h"`
 #include "OLEDDisplayUi.h"
@@ -81,6 +83,7 @@ const char* devEui  = "CHOOSE_YOUR_OWN";
 const char* devAddr = "CHOOSE_YOUR_OWN";  // used in ABP mode
 const char* appSKey = "CHOOSE_YOUR_OWN";
 const char* nwkSKey = "CHOOSE_YOUR_OWN";
+
 
 AXP20X_Class axp;
 TTN_esp32 ttn;
@@ -170,10 +173,10 @@ float packetDurationCalculator(int spreadingFactor) {
   int CR = 1;                                                              // coding rate 4/5, a default/fixed value for TTN
   int BW = 125;                                                            // bandwidth
   int DE = (spreadingFactor >= 11) ? 1 : 0;                                // DE = 1 when the low data rate optimization is enabled
-  int header = 0;                                                          // 0 = disabled
+  int header = 0;                                                          // 0 = enabled
   float tSymbol = ((pow(2, spreadingFactor)) / (BW * 1000.0f)) * 1000.0f;  // time in milliseconds
   float tPreamble = (nPreamble + 4.25f) * tSymbol;
-  int payloadSymbNb = 8 + fmax(ceil((8 * (bytesPayload)-4 * spreadingFactor + 28 + 16 - 20 * header) / (4 * (spreadingFactor - 2 * DE)) * (CR + 4)), 0);  // number of payload symbols
+  int payloadSymbNb = 8 + fmax((ceil(((8 * bytesPayload) - (4 * spreadingFactor) + 28 + 16 - (20 * header))/(4 * (spreadingFactor - 2 * DE)) * (CR + 4))), 0);  // number of payload symbols
   float tPayload = payloadSymbNb * tSymbol;
   float tPacket = tPreamble + tPayload;
   return tPacket;
@@ -183,7 +186,8 @@ void transmit() {
   if (xmitEnabled) {
     unsigned long justnow = millis();
 
-/*  // Enable for debugging
+#ifdef debug
+    // Enable for debugging
     // Print the payload data
     Serial.print("Payload size: ");
     Serial.println(lpp.getSize());
@@ -195,7 +199,7 @@ void transmit() {
       Serial.print(" ");
     }
     Serial.println();
-*/
+#endif
 
     // Send the payload via TTN
     ttn.sendBytes(payload, lpp.getSize());
@@ -232,11 +236,11 @@ void PayloadNow() {
     payload[lpp.getSize()];
     lpp.copy(payload);
 
-/*  // Enable for debugging
+#ifdef debug
+    // Enable for debugging
     // Print the payload data
     Serial.print("Payload size: ");
     Serial.println(lpp.getSize());
-
     Serial.print("Latitude: ");
     Serial.println(gps.location.lat());
     Serial.print("Longitude: ");
@@ -247,7 +251,7 @@ void PayloadNow() {
     Serial.println(gps_HDOP());
     Serial.print("Satellites: ");
     Serial.println(gps.satellites.value());
-*/
+#endif
 
     if ((firstTransmission) || ((distance_in_meters() >= 100) && (speed_in_kmh() < 18))) {
       transmit();
@@ -378,22 +382,24 @@ void drawFrame1(OLEDDisplay* display, OLEDDisplayUiState* state, int16_t x, int1
   display->setFont(ArialMT_Plain_10);
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   String str = "";
-  str += "Uptime: ";
+  str += "Uptime ";
   str += getUptime(0);
-  str += "\n";
-  str += "GPS: ";
+  str += ", Alt ";
+  str += gps.altitude.meters();
+  str += "m\n";
+  str += "GPS ";
   str += gps_location();
-  str += " hdop";
+  str += " hdop ";
   str += gps_HDOP();
   str += "\n";
-  str += "UTC: ";
+  str += "UTC ";
   str += gps_date();
   str += " ";
   str += gps_time();
   str += "\n";
   str += "Dist ";
   str += distance_in_meters();
-  str += "m Speed ";
+  str += "m, Speed ";
   str += speed_in_kmh();
   str += "kmh\n";
   display->drawString(0 + x, 0 + y, str);  // left
@@ -481,7 +487,7 @@ void oled_setup() {
   display.setContrast(255);
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_16);
-  display.drawString(0, 0, "Waiting for TTN");
+  display.drawString(0, 0, "Waiting for TTN"); // Not necessary for ABP, it will quickly run past this so not visible.
   display.drawString(0, 20, "Connecting...");
   display.drawString(0, 40, "   (OTAA)");
   display.display();

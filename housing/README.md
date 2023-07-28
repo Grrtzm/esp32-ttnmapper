@@ -6,12 +6,14 @@ They came from Thingiverse.
 The *scad files contain my design for a new strip of buttons and a case.
 
 
-The buttons from the case broke off at first use, so i designed my own.\
-Just break off the original buttons, clear the hole. Glue in the strip of buttons into the housing by putting some glue on the long slab.\
+The buttons in the case broke off at first use, so i designed my own.\
+Just break off the original buttons, clear the hole with a file. \
+Glue in the strip of buttons into the housing by putting some glue on the long slab.
 
-You can stick the case with suction cups to your car side window. 
-I use an external antenna with a magnet to put it on the car roof. 
-The cable goes through the window.
+
+You can stick the case with suction cups to your inside car window. \
+I use an external antenna with a magnet to put it on the car roof. \
+The cable goes through the window.\
 The suction cups come from the Dutch store "Wibra", they are used for towel hooks.\
 The designs were made with [OpenScad](https://openscad.org/).
 
